@@ -38,8 +38,7 @@ function WeatherComponent() {
     retry: false,
   });
 
-  // Use city name from weatherData for image query, fallback to inputLocation
-  const cityForImage = weatherData?.name || inputLocation;
+  const cityForImage = inputLocation;
 
   // Fetch background image for city
   const { data: bgImage, isLoading: imageLoading } = useQuery({
