@@ -14,15 +14,25 @@ const fetchWeather = async (location: string) => {
   return response.json();
 };
 
-const fetchCityImage = async (city: string): Promise<string> => {
-  const UNSPLASH_ACCESS_KEY = 'jcURL4ca79Xgor_8riWxVzPlv_1E0KmB_RDAtkAyNbs'; // Replace with your key
+const fetchCityImage = async (city: string) => {
+  const UNSPLASH_ACCESS_KEY = 'jcURL4ca79Xgor_8riWxVzPlv_1E0KmB_RDAtkAyNbs';
   const res = await fetch(`https://api.unsplash.com/search/photos?query=${city} landscape&client_id=${UNSPLASH_ACCESS_KEY}&orientation=landscape&per_page=1`);
   const data = await res.json();
   if (data.results && data.results.length > 0) {
-    return data.results[0].urls.full; // or .regular for smaller images
+    return {
+      small: data.results[0].urls.small,
+      full: data.results[0].urls.full,
+    };
   }
-  // Fallback image (optional, here blank to avoid showing anything initially)
-  return '';
+  return { small: '', full: '' };
+};
+
+const preloadImage = (src: string): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = src;
+    img.onload = () => resolve(src);
+  });
 };
 
 
@@ -35,20 +45,21 @@ function WeatherComponent() {
     queryKey: ['weather', inputLocation],
     queryFn: () => fetchWeather(inputLocation),
     enabled: !!inputLocation,
-    retry: false,
   });
 
-  const cityForImage = inputLocation;
-
-  // Fetch background image for city
-  const { data: bgImage, isLoading: imageLoading } = useQuery({
-    queryKey: ['cityImage', cityForImage],
-    queryFn: () => fetchCityImage(cityForImage),
-    enabled: !!cityForImage,
-    retry: false,
+  const { data: imageData, isLoading: imageLoading } = useQuery({
+    queryKey: ['cityImage', inputLocation],
+    queryFn: () => fetchCityImage(inputLocation),
+    enabled: !!inputLocation,
   });
 
-  const isLoading = weatherLoading || imageLoading;
+  const { data: fullImageUrl, isLoading: fullImageLoading } = useQuery({
+    queryKey: ['fullImage', imageData?.full],
+    queryFn: () => preloadImage(imageData!.full),
+    enabled: !!imageData?.full,
+  });
+
+  const imageSrc = fullImageUrl || imageData?.small;
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && pendingLocation.trim()) {
@@ -66,22 +77,30 @@ function WeatherComponent() {
   const cloudiness = weatherData?.clouds?.all || '--';
   const weatherDesc = weatherData?.weather?.[0]?.description || 'Clear sky';
 
+  const isLoading = weatherLoading || imageLoading;
+
   return (
     <div className="relative flex items-center justify-center min-h-screen w-full">
 
-      {/* Background image only if fetched */}
-      {bgImage && (
+      {/* Background image */}
+      {imageSrc && (
         <img
-          src={bgImage}
-          alt={`Scenic view of ${cityForImage}`}
-          className="background-image fixed inset-0 object-cover w-full h-full z-0"
+          src={imageSrc}
+          alt={`View of ${inputLocation}`}
+          className="background-image fixed inset-0 object-cover w-full h-full z-0 transition-opacity duration-700"
         />
       )}
 
       {/* Loading overlay */}
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 z-20">
-          <div className="text-white text-xl font-semibold">Loading...</div>
+        <div className="absolute inset-0 flex items-center justify-center z-20"
+        style={{ 
+          backgroundColor: 'rgb(0 0 0 / 50%)'
+        }}
+        >
+          <div className="animate-spin inline-block size-8 border-3 border-current border-t-transparent text-blue-600 rounded-full dark:text-blue-500" role="status" aria-label="loading">
+            <span className="sr-only">Loading...</span>
+          </div>
         </div>
       )}
 
