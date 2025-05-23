@@ -53,7 +53,7 @@ function WeatherComponent() {
     enabled: !!inputLocation,
   });
 
-  const { data: fullImageUrl, isLoading: fullImageLoading } = useQuery({
+  const { data: fullImageUrl } = useQuery({
     queryKey: ['fullImage', imageData?.full],
     queryFn: () => preloadImage(imageData!.full),
     enabled: !!imageData?.full,
