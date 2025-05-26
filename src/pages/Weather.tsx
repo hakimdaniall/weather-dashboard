@@ -22,7 +22,6 @@ interface ForecastItem {
 
 const OPENWEATHER_API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
 const UNSPLASH_ACCESS_KEY= import.meta.env.VITE_UNSPLASH_ACCESS_KEY
-const TIMEZONE_API_KEY = import.meta.env.VITE_TIMEZONE_API_KEY;
 
 const fetchWeather = async (location: string) => {
   const response = await fetch(
@@ -57,16 +56,6 @@ const fetchCityImage = async (city: string) => {
   return { small: '', full: '' };
 };
 
-const fetchLocalTime = async (lat: number, lon: number) => {
-  const res = await fetch(`https://api.timezonedb.com/v2.1/get-time-zone?key=${TIMEZONE_API_KEY}&format=json&by=position&lat=${lat}&lng=${lon}`);
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch local time');
-  }
-  return res.json();
-};
-
-
 const preloadImage = (src: string): Promise<string> => {
   return new Promise((resolve) => {
     const img = new Image();
@@ -99,12 +88,6 @@ function WeatherComponent() {
     enabled: !!imageData?.full,
   });
 
-  const { data: localTimeData } = useQuery({
-    queryKey: ['localTime', weatherData?.coord],
-    queryFn: () => fetchLocalTime(weatherData.coord.lat, weatherData.coord.lon),
-    enabled: !!weatherData?.coord,
-  });
-
   const  { data: forecastData } = useQuery({
     queryKey: ['forecast', inputLocation],
     queryFn: () => fetchForecast(inputLocation),
@@ -122,6 +105,18 @@ function WeatherComponent() {
       setInputLocation(pendingLocation.trim());
     }
   };
+
+  const getLocalTimeNow = (timezoneOffsetInSeconds: number) => {
+    const nowUTC = new Date().getTime() + new Date().getTimezoneOffset() * 60000; // current UTC time in ms
+    const localTime = new Date(nowUTC + timezoneOffsetInSeconds * 1000);
+    return localTime.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false // or true if you want AM/PM
+    });
+  };
+
+  const localTime = getLocalTimeNow(weatherData?.timezone);
 
   const temperature = weatherData ? (weatherData.main.temp - 273.15).toFixed(1) : '--';
   const feelsLike = weatherData ? (weatherData.main.feels_like - 273.15).toFixed(1) : '--';
@@ -205,15 +200,10 @@ function WeatherComponent() {
               />
             </div>
 
-            {localTimeData && (
+            {localTime && (
               <div className="flex items-center justify-center space-x-2 text-white/70">
                 <Clock className="w-4 h-4" />
-                <p className="text-sm">
-                  Local Time: {new Date(localTimeData.formatted).toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
-                </p>
+                <p className="text-sm">Local Time: {localTime}</p>
               </div>
             )}
           </div>
