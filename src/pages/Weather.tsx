@@ -20,11 +20,13 @@ interface ForecastItem {
   dt_txt: string;
 }
 
+const OPENWEATHER_API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
+const UNSPLASH_ACCESS_KEY= import.meta.env.VITE_UNSPLASH_ACCESS_KEY
+const TIMEZONE_API_KEY = import.meta.env.VITE_TIMEZONE_API_KEY;
 
 const fetchWeather = async (location: string) => {
-  const API_KEY = 'a62f5ff2c87dd6aed7e8cb93b9ca09c6';
   const response = await fetch(
-    `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${API_KEY}`
+    `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${OPENWEATHER_API_KEY}`
   );
   if (!response.ok) {
     throw new Error('Failed to fetch weather data');
@@ -33,9 +35,8 @@ const fetchWeather = async (location: string) => {
 };
 
 const fetchForecast = async (location: string) => {
-  const API_KEY = 'a62f5ff2c87dd6aed7e8cb93b9ca09c6';
   const response = await fetch(
-    `https://api.openweathermap.org/data/2.5/forecast?q=${location}&appid=${API_KEY}`
+    `https://api.openweathermap.org/data/2.5/forecast?q=${location}&appid=${OPENWEATHER_API_KEY}`
   );
   
   if (!response.ok) {
@@ -45,7 +46,6 @@ const fetchForecast = async (location: string) => {
 }
 
 const fetchCityImage = async (city: string) => {
-  const UNSPLASH_ACCESS_KEY = 'jcURL4ca79Xgor_8riWxVzPlv_1E0KmB_RDAtkAyNbs';
   const res = await fetch(`https://api.unsplash.com/search/photos?query=${city} landscape&client_id=${UNSPLASH_ACCESS_KEY}&orientation=landscape&per_page=1`);
   const data = await res.json();
   if (data.results && data.results.length > 0) {
@@ -58,7 +58,7 @@ const fetchCityImage = async (city: string) => {
 };
 
 const fetchLocalTime = async (lat: number, lon: number) => {
-  const res = await fetch(`https://api.timezonedb.com/v2.1/get-time-zone?key=GXVY4W4RXDFY&format=json&by=position&lat=${lat}&lng=${lon}`);
+  const res = await fetch(`https://api.timezonedb.com/v2.1/get-time-zone?key=${TIMEZONE_API_KEY}&format=json&by=position&lat=${lat}&lng=${lon}`);
 
   if (!res.ok) {
     throw new Error('Failed to fetch local time');
