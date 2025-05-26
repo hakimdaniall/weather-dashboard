@@ -148,9 +148,9 @@ function WeatherComponent() {
 
       <LoadingOverlay isLoading={isLoading} />
 
-      <div className="glass-card max-w-lg w-full mx-4 p-6 space-y-6 z-10 relative bg-black bg-opacity-40 rounded-lg">
+      <div className="glass-card max-w-lg w-full mx-4 p-6 space-y-6 z-10 relative bg-black bg-opacity-40 rounded-lg max-w-md md:max-w-4xl w-full">
         <div className="text-center space-y-3">
-          <div className="relative">
+          <div className="relative max-w-md mx-auto">
             <input
               type="text"
               className="w-full capitalize p-4 text-center text-white text-xl font-medium bg-white/10 border border-white/30 rounded-xl outline-none placeholder-white/60 focus:border-white/50 focus:bg-white/15 transition-all duration-300"
@@ -171,71 +171,62 @@ function WeatherComponent() {
           </div>
         </div>
 
-        <div className="text-center space-y-2">
-          <div className="flex items-center justify-center">
-            <span className="text-white text-8xl font-thin tracking-tight">{temperature}</span>
-            <span className="text-white/80 text-3xl font-light mt-2">°C</span>
+        <div className="md:grid md:grid-cols-2 md:gap-8 space-y-8 md:space-y-0">
+          <div className="space-y-8">
+            <div className="text-center space-y-2">
+              <div className="flex items-center justify-center">
+                <span className="text-white text-8xl font-thin tracking-tight">{temperature}</span>
+                <span className="text-white/80 text-3xl font-light mt-2">°C</span>
+              </div>
+              <p className="text-white/70 text-lg capitalize font-medium">{weatherDesc}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <WeatherMetricCard
+                title="Wind"
+                value={windSpeed}
+                unit="km/h"
+                Icon={Wind}
+              />
+              <WeatherMetricCard
+                title="Humidity"
+                value={`${humidity}%`}
+                Icon={Droplets}
+              />
+              <WeatherMetricCard
+                title="Feels Like"
+                value={`${feelsLike}°C`}
+                Icon={Sun}
+              />
+              <WeatherMetricCard
+                title="Cloudiness"
+                value={`${cloudiness}%`}
+                Icon={CloudSunRain}
+              />
+            </div>
+
+            {localTimeData && (
+              <div className="flex items-center justify-center space-x-2 text-white/70">
+                <Clock className="w-4 h-4" />
+                <p className="text-sm">
+                  Local Time: {new Date(localTimeData.formatted).toLocaleTimeString([], { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}
+                </p>
+              </div>
+            )}
           </div>
-          <p className="text-white/70 text-lg capitalize font-medium">{weatherDesc}</p>
-        </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <WeatherMetricCard
-            title="Wind"
-            value={windSpeed}
-            unit="km/h"
-            Icon={Wind}
-          />
-          <WeatherMetricCard
-            title="Humidity"
-            value={`${humidity}%`}
-            Icon={Droplets}
-          />
-          <WeatherMetricCard
-            title="Feels Like"
-            value={`${feelsLike}°C`}
-            Icon={Sun}
-          />
-          <WeatherMetricCard
-            title="Cloudiness"
-            value={`${cloudiness}%`}
-            Icon={CloudSunRain}
-          />
-        </div>
-
-        {localTimeData && (
-          <div className="flex items-center justify-center space-x-2 text-white/70">
-            <Clock className="w-4 h-4" />
-            <p className="text-sm">
-              Local Time: {new Date(localTimeData.formatted).toLocaleTimeString([], { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-              })}
-            </p>
-          </div>
-        )}
-
-        {dailyForecast && dailyForecast.length > 0 && (
           <div className="space-y-4">
             <h3 className="text-white text-lg font-semibold text-center">5-Day Forecast</h3>
-            <div className="space-y-3">
+            <div className="md:space-y-3 space-y-3 md:overflow-y-auto">
               {dailyForecast && dailyForecast.slice(0, 7).map((item: ForecastItem, index: number) => (
                 <ForecastCard key={item.dt} item={item} index={index} />
               ))}
               {!dailyForecast && !isLoading && (
                 <p className="text-white/60 text-sm text-center">No forecast data available.</p>
               )}
-            </div>
-          </div>
-        )}
-
-        <div className="flex justify-center">
-          <div className="backdrop-blur-sm bg-white/10 p-3 rounded-xl border border-white/20">
-            <div className="flex space-x-2">
-              <div className="w-2 h-2 bg-white rounded-full opacity-100"></div>
-              <div className="w-2 h-2 bg-white/50 rounded-full"></div>
-              <div className="w-2 h-2 bg-white/50 rounded-full"></div>
-              <div className="w-2 h-2 bg-white/50 rounded-full"></div>
             </div>
           </div>
         </div>
