@@ -58,7 +58,7 @@ const fetchCityImage = async (city: string) => {
 };
 
 const fetchLocalTime = async (lat: number, lon: number) => {
-  const res = await fetch(`http://api.timezonedb.com/v2.1/get-time-zone?key=GXVY4W4RXDFY&format=json&by=position&lat=${lat}&lng=${lon}`);
+  const res = await fetch(`https://api.timezonedb.com/v2.1/get-time-zone?key=GXVY4W4RXDFY&format=json&by=position&lat=${lat}&lng=${lon}`);
 
   if (!res.ok) {
     throw new Error('Failed to fetch local time');
