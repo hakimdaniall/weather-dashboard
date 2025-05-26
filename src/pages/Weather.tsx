@@ -218,7 +218,7 @@ function WeatherComponent() {
             )}
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 md:!block hidden">
             <h3 className="text-white text-lg font-semibold text-center">5-Day Forecast</h3>
             <div className="md:space-y-3 space-y-3 md:overflow-y-auto">
               {dailyForecast && dailyForecast.slice(0, 7).map((item: ForecastItem, index: number) => (
