@@ -1,55 +1,72 @@
-# React + TypeScript + Vite
+# Skycast — Weather Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A fast, good-looking weather dashboard built with React 19, TanStack Query and Tailwind CSS v4.
+It runs out of the box: **no API key is needed**.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **City search palette**: press `⌘K`, `Ctrl+K` or `/` to open it. Results autocomplete as you type, and the highlighted city's forecast is prefetched before you press Enter.
+- **Use my location** through browser geolocation, with reverse geocoding to get a readable city name.
+- **Current conditions** with animated weather icons and the city's local time and date.
+- **24-hour forecast**: an hour-by-hour strip with a temperature curve and rain chances.
+- **10-day forecast** with iOS-style temperature range bars. Today's bar marks the current temperature.
+- **Detail tiles**: UV index, wind compass and gusts, sunrise/sunset arc, air quality (US AQI and PM2.5), feels like, humidity and dew point, precipitation, visibility and pressure.
+- **Live rain radar**: an animated timeline you can play or scrub. Click anywhere on the map to load the weather there.
+- **Saved cities**: star a city to pin it. Pinned cities show live temperatures.
+- **Units**: °C or °F, km/h, mph, m/s or knots, and 12- or 24-hour time. Settings are saved in localStorage, and switching units never refetches.
+- **Shareable URLs**: the selected city is stored in the query string (`?lat=…&lon=…&name=…`), so links work and the back button moves between cities.
+- **Dynamic sky**: the background gradient follows the condition and day or night. It adds rain, snow, stars and lightning, and respects `prefers-reduced-motion`.
 
-## Expanding the ESLint configuration
+## TanStack Query patterns used
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+| Pattern | Where |
+| --- | --- |
+| `queryOptions` factories that share keys between `useQuery`, `useQueries` and `prefetchQuery` | `src/lib/queries.ts` |
+| Prefetching on hover/highlight, so selecting a city is instant | `SearchCommand.tsx` |
+| `useQueries` for parallel fetching of all saved cities, sharing the cache with the main view | `SavedCities.tsx` |
+| `placeholderData: keepPreviousData` for smooth city switching (the old data stays dimmed while new data loads) | `Dashboard.tsx` |
+| `staleTime`, background `refetchInterval` and refetch on window focus | `queries.ts` |
+| `invalidateQueries` for the manual refresh button | `Dashboard.tsx` |
+| `useMutation` for the geolocation flow (pending and error states) | `useGeolocate.ts` |
+| AbortSignal passed to `fetch`, so superseded searches are cancelled | `api.ts` |
+| React Query Devtools (dev only) | `main.tsx` |
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Stack
+
+React 19 · TypeScript · Vite · Tailwind CSS v4 · TanStack Query v5 · React Router · Zustand (persisted settings) ·
+Recharts · Motion · cmdk · Radix UI · React Leaflet · Sonner · Meteocons animated icons
+
+## Data sources (all free, no key)
+
+- [Open-Meteo](https://open-meteo.com/) for forecasts, geocoding and air quality
+- [RainViewer](https://www.rainviewer.com/api.html) for radar tiles
+- [Esri](https://www.esri.com/) for the dark basemap tiles
+- [OpenStreetMap Nominatim](https://nominatim.org/) for reverse geocoding
+
+## Getting started
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Optional: city photos
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Copy `.env.example` to `.env` and add an [Unsplash](https://unsplash.com/developers) access key. A photo of
+the selected city then fades in behind the dashboard. Without a key, the weather gradients are used.
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+## Project structure
+
 ```
-# weather-dashboard
+src/
+  components/      UI cards (CurrentConditions, HourlyForecast, DailyForecast, DetailTiles, RadarMap, …)
+    ui/            Small shadcn-style primitives
+  hooks/           usePlace (URL state), useGeolocate, useNow, useDebouncedValue
+  lib/
+    api.ts         Fetchers + response normalization
+    queries.ts     TanStack Query option factories
+    format.ts      Units, time zones, formatting
+    weather-codes.ts  WMO code → label, icon, background
+  store/           Zustand settings store (units, saved cities, recents)
+  pages/Dashboard.tsx
+```
